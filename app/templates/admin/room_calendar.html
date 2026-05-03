@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房态日历 - 酒店 AI 管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { min-height: 100px; }
+        .progress-bar { height: 6px; border-radius: 4px; background: #e5e7eb; }
+        .progress-fill { height: 6px; border-radius: 4px; background: #2563eb; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">酒店 AI 管家</h1>
+            <div class="space-x-4">
+                <a href="/admin" class="text-blue-600 hover:text-blue-800">首页</a>
+                <a href="/admin/api-settings" class="text-blue-600 hover:text-blue-800">API 设置</a>
+                <a href="/docs" target="_blank" class="text-blue-600 hover:text-blue-800">API 文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ hotel.name }} - 房态日历</h2>
+                <p class="text-gray-500 text-sm mt-1">{{ hotel.city }} | 共 {{ hotel.total_rooms }} 间房</p>
+            </div>
+            <div class="flex space-x-3">
+                <select id="monthSelect" onchange="changeMonth()" class="px-3 py-2 border rounded">
+                    {% for m in months %}
+                    <option value="{{ m.value }}" {% if m.selected %}selected{% endif %}>{{ m.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.total_rooms }}</div>
+                <div class="text-sm text-gray-500">总房间</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-green-600">{{ stats.avg_occupancy }}%</div>
+                <div class="text-sm text-gray-500">本月平均入住率</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-red-600">&yen;{{ stats.avg_price }}</div>
+                <div class="text-sm text-gray-500">本月平均房价</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-purple-600">&yen;{{ stats.total_revenue }}</div>
+                <div class="text-sm text-gray-500">本月预计营收</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="calendar-grid mb-2">
+                <div class="text-center text-sm text-gray-500 py-2">一</div>
+                <div class="text-center text-sm text-gray-500 py-2">二</div>
+                <div class="text-center text-sm text-gray-500 py-2">三</div>
+                <div class="text-center text-sm text-gray-500 py-2">四</div>
+                <div class="text-center text-sm text-gray-500 py-2">五</div>
+                <div class="text-center text-sm text-gray-500 py-2">六</div>
+                <div class="text-center text-sm text-gray-500 py-2">日</div>
+            </div>
+            <div class="calendar-grid" id="calendarBody">
+                {% for day in calendar_days %}
+                {% if day.is_empty %}
+                <div class="calendar-day bg-gray-50 rounded p-2"></div>
+                {% else %}
+                {% if day.is_today %}
+                <div class="calendar-day border rounded p-2 ring-2 ring-blue-400">
+                {% else %}
+                <div class="calendar-day border rounded p-2">
+                {% endif %}
+                    {% if day.is_today %}
+                    <div class="text-sm font-medium text-blue-600">{{ day.day }}</div>
+                    {% else %}
+                    <div class="text-sm font-medium text-gray-700">{{ day.day }}</div>
+                    {% endif %}
+                    {% if day.business %}
+                    <div class="mt-1 space-y-1 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">入住</span>
+                            <span class="font-medium text-gray-800">{{ day.business.sold_rooms }}/{{ day.business.total_rooms }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">营收</span>
+                            <span class="text-red-600">&yen;{{ "%.0f"|format(day.business.total_revenue) }}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ day.business.occupancy_rate }}%"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mt-1 text-xs text-gray-300">暂无数据</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mt-4 flex items-center space-x-6 text-sm text-gray-500">
+            <div class="flex items-center"><span class="w-3 h-3 bg-blue-600 rounded mr-2"></span>入住率进度条</div>
+            <div class="flex items-center"><span class="w-3 h-3 border-2 border-blue-400 rounded mr-2"></span>今天</div>
+        </div>
+    </div>
+
+    <script>
+        function changeMonth() {
+            var val = document.getElementById('monthSelect').value;
+            window.location.href = '/admin/hotels/{{ hotel.id }}/room-calendar?month=' + val;
+        }
+    </script>
+</body>
+</html>

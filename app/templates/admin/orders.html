@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理 - 酒店 AI 管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">酒店 AI 管家</h1>
+            <div class="space-x-4">
+                <a href="/admin" class="text-blue-600 hover:text-blue-800">首页</a>
+                <a href="/admin/api-settings" class="text-blue-600 hover:text-blue-800">API 设置</a>
+                <a href="/docs" target="_blank" class="text-blue-600 hover:text-blue-800">API 文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ hotel.name }} - 订单管理</h2>
+                <p class="text-gray-500 text-sm mt-1">{{ hotel.city }} | 共 {{ hotel.total_rooms }} 间房</p>
+            </div>
+            <button onclick="document.getElementById('addForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                + 录入订单
+            </button>
+        </div>
+
+        <div id="addForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">录入新订单</h3>
+            <form id="orderForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">平台</label>
+                        <select id="orderPlatform" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                            <option value="携程">携程</option>
+                            <option value="美团">美团</option>
+                            <option value="飞猪">飞猪</option>
+                            <option value="去哪儿">去哪儿</option>
+                            <option value="直客">直客</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">订单号</label>
+                        <input type="text" id="orderNo" placeholder="平台订单号" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">客户姓名</label>
+                        <input type="text" id="orderCustomer" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">客户电话</label>
+                        <input type="text" id="orderPhone" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">房型</label>
+                        <input type="text" id="orderRoomType" placeholder="大床房" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">金额(元)</label>
+                        <input type="number" id="orderAmount" step="0.01" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">入住日期</label>
+                        <input type="date" id="orderCheckIn" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">退房日期</label>
+                        <input type="date" id="orderCheckOut" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                        <select id="orderStatus" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                            <option value="pending">待确认</option>
+                            <option value="confirmed">已确认</option>
+                            <option value="checked_in">已入住</option>
+                            <option value="checked_out">已退房</option>
+                            <option value="cancelled">已取消</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="document.getElementById('addForm').classList.add('hidden')" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">保存</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="flex space-x-3 mb-4">
+            <button onclick="filterOrders('all')" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">全部</button>
+            <button onclick="filterOrders('pending')" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">待确认</button>
+            <button onclick="filterOrders('confirmed')" class="px-3 py-1 bg-green-600 text-white rounded text-sm">已确认</button>
+            <button onclick="filterOrders('cancelled')" class="px-3 py-1 bg-gray-500 text-white rounded text-sm">已取消</button>
+        </div>
+
+        {% if orders %}
+        <div id="orderList" class="space-y-3">
+            {% for order in orders %}
+            <div class="bg-white rounded-lg shadow p-5 order-item" data-status="{{ order.status }}">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm font-mono text-gray-400">#{{ order.order_no }}</span>
+                            <span class="px-2 py-0.5 text-xs rounded
+                                {% if order.status == 'pending' %}bg-yellow-100 text-yellow-700
+                                {% elif order.status == 'confirmed' %}bg-green-100 text-green-700
+                                {% elif order.status == 'checked_in' %}bg-blue-100 text-blue-700
+                                {% elif order.status == 'cancelled' %}bg-gray-100 text-gray-500
+                                {% else %}bg-gray-100 text-gray-600
+                                {% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                        <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div><span class="text-gray-400">平台：</span>{{ order.platform }}</div>
+                            <div><span class="text-gray-400">客户：</span>{{ order.customer_name }}</div>
+                            <div><span class="text-gray-400">电话：</span>{{ order.customer_phone }}</div>
+                            <div><span class="text-gray-400">房型：</span>{{ order.room_type }}</div>
+                        </div>
+                        <div class="mt-1 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div><span class="text-gray-400">入住：</span>{{ order.check_in_date }}</div>
+                            <div><span class="text-gray-400">退房：</span>{{ order.check_out_date }}</div>
+                            <div><span class="text-gray-400">金额：</span><span class="text-red-600 font-medium">¥{{ "%.0f"|format(order.amount) }}</span></div>
+                        </div>
+                    </div>
+                    {% if order.status == 'pending' %}
+                    <div class="flex space-x-2 ml-4">
+                        <button onclick="updateOrderStatus({{ order.id }}, 'confirmed')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">确认</button>
+                        <button onclick="updateOrderStatus({{ order.id }}, 'cancelled')" class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">取消</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-600">暂无订单数据</p>
+            <p class="text-gray-400 text-sm mt-2">点击「录入订单」添加订单，或等待 OTA 平台自动同步</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const hotelId = {{ hotel.id }};
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                hotel_id: hotelId,
+                platform: document.getElementById('orderPlatform').value,
+                order_no: document.getElementById('orderNo').value,
+                customer_name: document.getElementById('orderCustomer').value,
+                customer_phone: document.getElementById('orderPhone').value,
+                room_type: document.getElementById('orderRoomType').value,
+                check_in_date: document.getElementById('orderCheckIn').value,
+                check_out_date: document.getElementById('orderCheckOut').value,
+                amount: parseFloat(document.getElementById('orderAmount').value),
+                status: document.getElementById('orderStatus').value
+            };
+            try {
+                const resp = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (resp.ok) location.reload();
+                else alert('添加失败');
+            } catch (err) { alert('网络错误'); }
+        });
+
+        async function updateOrderStatus(id, status) {
+            try {
+                const resp = await fetch('/api/orders/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status })
+                });
+                if (resp.ok) location.reload();
+                else alert('更新失败');
+            } catch (err) { alert('网络错误'); }
+        }
+
+        function filterOrders(status) {
+            document.querySelectorAll('.order-item').forEach(el => {
+                if (status === 'all' || el.dataset.status === status) {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

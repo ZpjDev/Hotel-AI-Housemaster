@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房型管理 - 酒店 AI 管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">酒店 AI 管家</h1>
+            <div class="space-x-4">
+                <a href="/admin" class="text-blue-600 hover:text-blue-800">首页</a>
+                <a href="/admin/api-settings" class="text-blue-600 hover:text-blue-800">API 设置</a>
+                <a href="/docs" target="_blank" class="text-blue-600 hover:text-blue-800">API 文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ hotel.name }} - 房型管理</h2>
+                <p class="text-gray-500 text-sm mt-1">{{ hotel.city }} | {{ hotel.address }} | {{ hotel.phone }}</p>
+            </div>
+            <button onclick="document.getElementById('addForm').classList.toggle('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                + 添加房型
+            </button>
+        </div>
+
+        <!-- 添加房型表单 -->
+        <div id="addForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">新增房型</h3>
+            <form id="roomTypeForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">房型名称</label>
+                        <input type="text" id="rtName" placeholder="大床房、双床房等" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">房间数量</label>
+                        <input type="number" id="rtCount" value="10" min="1" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">基础价格(元)</label>
+                        <input type="number" id="rtBasePrice" value="280" min="0" required class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">最低价格(元)</label>
+                        <input type="number" id="rtMinPrice" value="200" min="0" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">最高价格(元)</label>
+                        <input type="number" id="rtMaxPrice" value="400" min="0" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">包含早餐</label>
+                        <select id="rtBreakfast" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                            <option value="true">是</option>
+                            <option value="false">否</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">房型设施</label>
+                    <input type="text" id="rtFeatures" placeholder="1.8米大床，独立卫浴，空调，投影" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">取消政策</label>
+                    <input type="text" id="rtCancelPolicy" placeholder="入住前24小时可免费取消" class="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="document.getElementById('addForm').classList.add('hidden')" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">保存</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 房型列表 -->
+        {% if room_types %}
+        <div class="space-y-4">
+            {% for rt in room_types %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <h3 class="text-lg font-semibold text-gray-800">{{ rt.name }}</h3>
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">共 {{ rt.total_count }} 间</span>
+                            {% if rt.breakfast_included %}
+                            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">含早餐</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-3 flex items-center space-x-4">
+                            <div class="text-sm">
+                                <span class="text-gray-400">基础价：</span>
+                                <span class="font-medium text-gray-800">¥{{ "%.0f"|format(rt.base_price) }}</span>
+                            </div>
+                            <div class="text-sm">
+                                <span class="text-gray-400">价格区间：</span>
+                                <span class="text-gray-800">¥{{ "%.0f"|format(rt.min_price) }} - ¥{{ "%.0f"|format(rt.max_price) }}</span>
+                            </div>
+                        </div>
+                        {% if rt.features %}
+                        <p class="text-gray-500 text-sm mt-2">设施：{{ rt.features }}</p>
+                        {% endif %}
+                        {% if rt.cancellation_policy %}
+                        <p class="text-gray-400 text-sm mt-1">取消：{{ rt.cancellation_policy }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button onclick="editRoomType({{ rt.id }})" class="text-blue-600 hover:text-blue-800 text-sm">编辑</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-600">暂无房型数据</p>
+            <p class="text-gray-400 text-sm mt-2">点击上方「添加房型」按钮添加房型</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const hotelId = {{ hotel.id }};
+
+        document.getElementById('roomTypeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                hotel_id: hotelId,
+                name: document.getElementById('rtName').value,
+                total_count: parseInt(document.getElementById('rtCount').value),
+                base_price: parseFloat(document.getElementById('rtBasePrice').value),
+                min_price: parseFloat(document.getElementById('rtMinPrice').value),
+                max_price: parseFloat(document.getElementById('rtMaxPrice').value),
+                features: document.getElementById('rtFeatures').value || null,
+                breakfast_included: document.getElementById('rtBreakfast').value === 'true',
+                cancellation_policy: document.getElementById('rtCancelPolicy').value || null
+            };
+
+            try {
+                const resp = await fetch('/api/room-types', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (resp.ok) {
+                    location.reload();
+                } else {
+                    alert('添加失败');
+                }
+            } catch (err) {
+                alert('网络错误');
+            }
+        });
+
+        async function editRoomType(id) {
+            const basePrice = prompt('请输入新的基础价格：');
+            if (!basePrice) return;
+            try {
+                const resp = await fetch('/api/room-types/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base_price: parseFloat(basePrice) })
+                });
+                if (resp.ok) {
+                    location.reload();
+                } else {
+                    alert('更新失败');
+                }
+            } catch (err) {
+                alert('网络错误');
+            }
+        }
+    </script>
+</body>
+</html>

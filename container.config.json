@@ -1,0 +1,14 @@
+{
+  "containerPort": 80,
+  "minNum": 0,
+  "maxNum": 1,
+  "cpu": 0.25,
+  "mem": 0.5,
+  "policyType": "cpu",
+  "policyThreshold": 50,
+  "envParams": {
+    "DATABASE_URL": "sqlite:///./data/hotel_ai_butler.db",
+    "SCHEDULER_ENABLED": "true"
+  },
+  "customLogs": "stdout"
+}

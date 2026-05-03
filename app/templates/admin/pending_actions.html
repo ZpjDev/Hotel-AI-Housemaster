@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待确认动作 - 酒店 AI 管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">酒店 AI 管家</h1>
+            <div class="space-x-4">
+                <a href="/admin" class="text-blue-600 hover:text-blue-800">首页</a>
+                <a href="/admin/api-settings" class="text-blue-600 hover:text-blue-800">API 设置</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">待确认动作</h2>
+
+        {% if actions %}
+        <div class="bg-white rounded-lg shadow divide-y">
+            {% for action in actions %}
+            <div class="p-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-block px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">{{ action.action_type }}</span>
+                            {% if action.risk_level %}
+                            <span class="inline-block px-2 py-1 text-xs rounded {% if action.risk_level == 'high' %}bg-red-100 text-red-800{% elif action.risk_level == 'medium' %}bg-orange-100 text-orange-800{% else %}bg-green-100 text-green-800{% endif %}">{{ action.risk_level }}</span>
+                            {% endif %}
+                            {% if action.platform %}
+                            <span class="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">{{ action.platform }}</span>
+                            {% endif %}
+                            <span class="inline-block px-2 py-1 text-xs rounded {% if action.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif action.status == 'approved' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">{{ action.status }}</span>
+                        </div>
+                        {% if action.ai_reason %}
+                        <p class="text-sm text-gray-600 mt-2">AI 理由: {{ action.ai_reason }}</p>
+                        {% endif %}
+                        {% if action.payload_json %}
+                        <pre class="text-xs bg-gray-50 p-2 mt-2 rounded overflow-x-auto">{{ action.payload_json }}</pre>
+                        {% endif %}
+                        <p class="text-xs text-gray-400 mt-2">创建时间: {{ action.created_at }}</p>
+                    </div>
+                    <div class="space-x-2 ml-4">
+                        <button onclick="updateAction({{ action.id }}, 'approved')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                            确认
+                        </button>
+                        <button onclick="updateAction({{ action.id }}, 'rejected')" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                            拒绝
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-600">暂无待确认动作</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function updateAction(actionId, status) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('status', status);
+                const response = await fetch(`/api/pending-actions/${actionId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString(),
+                });
+                if (response.ok) {
+                    alert(status === 'approved' ? '已确认' : '已拒绝');
+                    location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('操作失败: ' + (error.detail || '未知错误'));
+                }
+            } catch (e) {
+                alert('请求失败: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

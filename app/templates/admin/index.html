@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 酒店管家 - 管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">AI 酒店管家</h1>
+            <div class="flex gap-3">
+                <a href="/admin/settings" class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">配置中心</a>
+                <a href="/admin/monitor" class="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700">系统监控</a>
+                <a href="/docs" target="_blank" class="px-3 py-1.5 bg-gray-600 text-white rounded text-sm hover:bg-gray-700">API 文档</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">核心模块</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <a href="/admin/settings" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white hover:shadow-lg transition">
+                    <div class="text-2xl mb-2">⚙️</div>
+                    <div class="font-semibold text-sm">配置中心</div>
+                    <div class="text-xs text-blue-100 mt-1">AI/微信/OTA 一站式配置</div>
+                </a>
+                <a href="/admin/monitor" class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-4 text-white hover:shadow-lg transition">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-semibold text-sm">系统监控</div>
+                    <div class="text-xs text-green-100 mt-1">健康/API/性能监控</div>
+                </a>
+                <a id="link-competitors" class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-4 text-white hover:shadow-lg transition cursor-pointer">
+                    <div class="text-2xl mb-2">🏨</div>
+                    <div class="font-semibold text-sm">竞品管理</div>
+                    <div class="text-xs text-orange-100 mt-1">竞品价格同步</div>
+                </a>
+                <a id="link-room-types" class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg p-4 text-white hover:shadow-lg transition cursor-pointer">
+                    <div class="text-2xl mb-2">🛏️</div>
+                    <div class="font-semibold text-sm">房型管理</div>
+                    <div class="text-xs text-cyan-100 mt-1">房型信息维护</div>
+                </a>
+                <a id="link-orders" class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-white hover:shadow-lg transition cursor-pointer">
+                    <div class="text-2xl mb-2">📋</div>
+                    <div class="font-semibold text-sm">订单管理</div>
+                    <div class="text-xs text-purple-100 mt-1">录入/确认/取消</div>
+                </a>
+                <a id="link-calendar" class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg p-4 text-white hover:shadow-lg transition cursor-pointer">
+                    <div class="text-2xl mb-2">📅</div>
+                    <div class="font-semibold text-sm">房态日历</div>
+                    <div class="text-xs text-teal-100 mt-1">月度房态房价</div>
+                </a>
+            </div>
+        </div>
+
+        <h2 class="text-lg font-bold text-gray-800 mb-4">酒店管理</h2>
+        {% if hotels %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for hotel in hotels %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-800">{{ hotel.name }}</h3>
+                <p class="text-gray-600 text-sm mt-2">📍 {{ hotel.city }} | {{ hotel.address }}</p>
+                <p class="text-gray-600 text-sm">🏠 {{ hotel.total_rooms }} 间 | 📞 {{ hotel.phone }}</p>
+                {% if hotel.description %}
+                <p class="text-gray-400 text-sm mt-1">{{ hotel.description }}</p>
+                {% endif %}
+                <div class="mt-4 pt-4 border-t flex flex-wrap gap-x-3 gap-y-1">
+                    <a href="/admin/hotels/{{ hotel.id }}/room-types" class="text-cyan-600 text-sm hover:underline">房型</a>
+                    <a href="/admin/hotels/{{ hotel.id }}/room-calendar" class="text-teal-600 text-sm hover:underline">房态</a>
+                    <a href="/admin/hotels/{{ hotel.id }}/competitors" class="text-orange-600 text-sm hover:underline">竞品</a>
+                    <a href="/admin/hotels/{{ hotel.id }}/orders" class="text-purple-600 text-sm hover:underline">订单</a>
+                    <a href="/admin/pending-actions" class="text-red-600 text-sm hover:underline">审批</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-600">暂无酒店数据</p>
+            <p class="text-gray-400 text-sm mt-2">请先运行 seed_demo_data.py 初始化数据</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+    async function setupQuickLinks() {
+        try {
+            const resp = await fetch('/api/hotels');
+            const hotels = await resp.json();
+            if (hotels.length > 0) {
+                const hid = hotels[0].id;
+                document.getElementById('link-competitors').href = '/admin/hotels/' + hid + '/competitors';
+                document.getElementById('link-room-types').href = '/admin/hotels/' + hid + '/room-types';
+                document.getElementById('link-orders').href = '/admin/hotels/' + hid + '/orders';
+                document.getElementById('link-calendar').href = '/admin/hotels/' + hid + '/room-calendar';
+            }
+        } catch(e) {}
+    }
+    setupQuickLinks();
+    </script>
+</body>
+</html>

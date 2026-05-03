@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统监控 - AI 酒店管家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/admin" class="text-xl font-bold text-gray-800">AI 酒店管家</a>
+                    <span class="ml-4 text-gray-400">|</span>
+                    <a href="/admin/settings" class="ml-4 text-gray-600 hover:text-gray-900">配置中心</a>
+                    <span class="ml-4 text-gray-900 font-medium">系统监控</span>
+                </div>
+                <div class="flex items-center">
+                    <span id="status-badge" class="px-2 py-1 rounded text-sm bg-gray-200">加载中...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-4">
+                <p class="text-sm text-gray-500">API 调用 (24h)</p>
+                <p id="stat-api-calls" class="text-2xl font-bold text-gray-800">--</p>
+                <p id="stat-api-rate" class="text-xs text-green-600">成功率 --%</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <p class="text-sm text-gray-500">策略生成 (24h)</p>
+                <p id="stat-strategies" class="text-2xl font-bold text-blue-600">--</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <p class="text-sm text-gray-500">订单 (24h)</p>
+                <p id="stat-orders" class="text-2xl font-bold text-orange-600">--</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <p class="text-sm text-gray-500">微信消息 (24h)</p>
+                <p id="stat-messages" class="text-2xl font-bold text-green-600">--</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">服务健康状态</h2>
+            <div id="health-checks" class="space-y-3">加载中...</div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Provider 调用统计 (24h)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Provider</th>
+                            <th class="px-4 py-2 text-center">总调用</th>
+                            <th class="px-4 py-2 text-center">成功</th>
+                            <th class="px-4 py-2 text-center">失败</th>
+                            <th class="px-4 py-2 text-center">成功率</th>
+                            <th class="px-4 py-2 text-center">平均延迟</th>
+                            <th class="px-4 py-2 text-left">最后错误</th>
+                        </tr>
+                    </thead>
+                    <tbody id="provider-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">最近错误</h2>
+            <div id="recent-errors" class="space-y-2">加载中...</div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-gray-800">API 调用时间线</h2>
+                <select id="timeline-hours" onchange="loadTimeline()" class="border rounded px-2 py-1 text-sm">
+                    <option value="1">最近 1 小时</option>
+                    <option value="6">最近 6 小时</option>
+                    <option value="24" selected>最近 24 小时</option>
+                </select>
+            </div>
+            <div id="timeline" class="space-y-1 max-h-96 overflow-y-auto">加载中...</div>
+        </div>
+    </main>
+
+    <script>
+    async function loadDashboard() {
+        try {
+            const [stats, providers, health, errors] = await Promise.all([
+                fetch('/monitor/stats?hours=24').then(r => r.json()),
+                fetch('/monitor/providers?hours=24').then(r => r.json()),
+                fetch('/monitor/health').then(r => r.json()),
+                fetch('/monitor/errors?limit=10').then(r => r.json())
+            ]);
+            const api = stats.api_calls || {};
+            document.getElementById('stat-api-calls').textContent = api.total || 0;
+            document.getElementById('stat-api-rate').textContent = `成功率 ${(api.success_rate || 0)}%`;
+            document.getElementById('stat-strategies').textContent = (stats.business?.strategies_generated || 0);
+            document.getElementById('stat-orders').textContent = (stats.business?.orders || 0);
+            document.getElementById('stat-messages').textContent = (stats.business?.wechat_messages || 0);
+
+            const badge = document.getElementById('status-badge');
+            badge.textContent = health.status === 'healthy' ? '系统正常' : health.status;
+            badge.className = `px-2 py-1 rounded text-sm ${
+                health.status === 'healthy' ? 'bg-green-200 text-green-800' :
+                health.status === 'degraded' ? 'bg-yellow-200 text-yellow-800' :
+                'bg-red-200 text-red-800'
+            }`;
+
+            const healthDiv = document.getElementById('health-checks');
+            let healthHtml = '';
+            for (const [name, info] of Object.entries(health.checks || {})) {
+                const color = info.status === 'healthy' ? 'green' : info.status === 'warning' || info.status === 'not_configured' ? 'yellow' : 'red';
+                const label = {database: '数据库', ai_api: 'AI API', wechat: '微信'}[name] || name;
+                healthHtml += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-${color}-500 mr-2"></span><span class="font-medium">${label}</span></div>
+                    <span class="text-sm text-gray-600">${info.message}</span></div>`;
+            }
+            healthDiv.innerHTML = healthHtml;
+
+            const tbody = document.getElementById('provider-table');
+            let rows = '';
+            for (const [name, p] of Object.entries(providers || {})) {
+                const rate = p.total > 0 ? ((p.successful / p.total * 100).toFixed(1)) : 0;
+                const avgLatency = p.avg_latency_ms ? `${p.avg_latency_ms}ms` : '--';
+                const lastError = p.last_error ? `<span title="${p.last_error}" class="text-red-500 truncate block max-w-xs">${p.last_error.substring(0, 40)}...</span>` : '<span class="text-green-500">--</span>';
+                rows += `<tr class="border-b"><td class="px-4 py-2 font-medium">${name}</td><td class="px-4 py-2 text-center">${p.total}</td><td class="px-4 py-2 text-center text-green-600">${p.successful}</td><td class="px-4 py-2 text-center ${p.failed > 0 ? 'text-red-600' : ''}">${p.failed}</td><td class="px-4 py-2 text-center">${rate}%</td><td class="px-4 py-2 text-center">${avgLatency}</td><td class="px-4 py-2 text-xs">${lastError}</td></tr>`;
+            }
+            tbody.innerHTML = rows || '<tr><td colspan="7" class="px-4 py-4 text-center text-gray-400">暂无数据</td></tr>';
+
+            const errDiv = document.getElementById('recent-errors');
+            let errHtml = '';
+            if (errors && errors.length > 0) {
+                errors.forEach(e => {
+                    const time = e.created_at ? new Date(e.created_at).toLocaleString('zh-CN') : '';
+                    errHtml += `<div class="flex items-start gap-3 p-3 bg-red-50 rounded border border-red-200">
+                        <span class="text-red-500 font-medium whitespace-nowrap text-sm">${e.provider}</span>
+                        <span class="text-gray-700 text-sm flex-1 truncate">${e.error}</span>
+                        <span class="text-gray-400 text-xs whitespace-nowrap">${time}</span></div>`;
+                });
+            } else {
+                errHtml = '<p class="text-green-600 text-center py-4">暂无错误日志，系统运行正常</p>';
+            }
+            errDiv.innerHTML = errHtml;
+        } catch (err) { console.error('加载监控数据失败:', err); }
+    }
+
+    async function loadTimeline() {
+        const hours = document.getElementById('timeline-hours').value;
+        const container = document.getElementById('timeline');
+        try {
+            const data = await fetch(`/monitor/timeline?hours=${hours}&limit=50`).then(r => r.json());
+            if (!data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 text-center py-4">暂无数据</p>'; return; }
+            let html = '';
+            data.forEach(log => {
+                const time = log.created_at ? new Date(log.created_at).toLocaleTimeString('zh-CN') : '';
+                const color = log.success ? 'green' : 'red';
+                html += `<div class="flex items-center gap-3 py-1 border-b border-gray-100">
+                    <span class="text-gray-400 text-xs whitespace-nowrap w-16">${time}</span>
+                    <span class="w-2 h-2 rounded-full bg-${color}-500"></span>
+                    <span class="text-sm font-medium whitespace-nowrap">${log.provider}</span>
+                    <span class="text-sm text-gray-600 flex-1 truncate">${log.endpoint}</span>
+                    <span class="text-xs text-gray-400 whitespace-nowrap">${log.latency_ms ? log.latency_ms + 'ms' : ''}</span></div>`;
+            });
+            container.innerHTML = html;
+        } catch (err) { container.innerHTML = '<p class="text-red-500">加载失败</p>'; }
+    }
+
+    loadDashboard();
+    loadTimeline();
+    setInterval(loadDashboard, 60000);
+    </script>
+</body>
+</html>
