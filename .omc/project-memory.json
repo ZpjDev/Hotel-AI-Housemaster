@@ -1,0 +1,243 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778405156421,
+  "projectRoot": "C:\\Users\\Admin\\Desktop\\hotel_ai_butler_v1\\hotel_ai_butler",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": "snake_case",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "scripts"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 3,
+      "lastAccessed": 1778405156153,
+      "keyFiles": [
+        "config.py",
+        "database.py",
+        "main.py"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 5,
+      "lastAccessed": 1778405156169,
+      "keyFiles": [
+        "build_release.py",
+        "configure_wechat.py",
+        "migrate_add_competitor_price_fields.py",
+        "run_wechat_ai_bridge.py",
+        "wechat_one_click_setup.py"
+      ]
+    },
+    "app\\models": {
+      "path": "app\\models",
+      "purpose": "Data models",
+      "fileCount": 1,
+      "lastAccessed": 1778405156206,
+      "keyFiles": [
+        "__init__.py"
+      ]
+    },
+    "app\\schemas": {
+      "path": "app\\schemas",
+      "purpose": "Schema definitions",
+      "fileCount": 1,
+      "lastAccessed": 1778405156208,
+      "keyFiles": [
+        "__init__.py"
+      ]
+    },
+    "app\\services": {
+      "path": "app\\services",
+      "purpose": "Business logic services",
+      "fileCount": 12,
+      "lastAccessed": 1778405156227,
+      "keyFiles": [
+        "ai_provider.py",
+        "crud_business.py",
+        "crud_competitor.py"
+      ]
+    },
+    "app\\utils": {
+      "path": "app\\utils",
+      "purpose": "Utility functions",
+      "fileCount": 2,
+      "lastAccessed": 1778405156279,
+      "keyFiles": [
+        "api_log.py",
+        "__init__.py"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "README.md",
+      "accessCount": 16,
+      "lastAccessed": 1778406135529,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 1,
+      "lastAccessed": 1778405255878,
+      "type": "file"
+    },
+    {
+      "path": "Dockerfile",
+      "accessCount": 1,
+      "lastAccessed": 1778405256258,
+      "type": "file"
+    },
+    {
+      "path": "container.config.json",
+      "accessCount": 1,
+      "lastAccessed": 1778405256871,
+      "type": "file"
+    },
+    {
+      "path": "docker-compose.yml",
+      "accessCount": 1,
+      "lastAccessed": 1778405257498,
+      "type": "file"
+    },
+    {
+      "path": "requirements.txt",
+      "accessCount": 1,
+      "lastAccessed": 1778405257959,
+      "type": "file"
+    },
+    {
+      "path": "app\\database.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405275328,
+      "type": "file"
+    },
+    {
+      "path": "app\\main.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405275657,
+      "type": "file"
+    },
+    {
+      "path": "app\\config.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405275799,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\wechat.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405296586,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\ai.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405296835,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\business.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405296959,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\admin.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405297145,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\external.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405297216,
+      "type": "file"
+    },
+    {
+      "path": "app\\services\\strategy_service.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405343051,
+      "type": "file"
+    },
+    {
+      "path": "app\\services\\scheduler_service.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405343154,
+      "type": "file"
+    },
+    {
+      "path": "app\\services\\ai_provider.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405343236,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\api_logs.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405358595,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\management.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405358728,
+      "type": "file"
+    },
+    {
+      "path": "app\\routers\\monitor.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405358981,
+      "type": "file"
+    },
+    {
+      "path": "app\\services\\report_service.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405359517,
+      "type": "file"
+    },
+    {
+      "path": "app\\utils\\api_log.py",
+      "accessCount": 1,
+      "lastAccessed": 1778405395366,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
